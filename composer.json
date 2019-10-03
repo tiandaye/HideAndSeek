@@ -1,0 +1,17 @@
+{
+    "name": "tianwangchong/hide-and-seek",
+    "description": "捉迷藏游戏",
+    "type": "project",
+    "authors": [
+        {
+            "name": "tianwangchong",
+            "email": "q408596288@vip.qq.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "app"
+        }
+    },
+    "require": {}
+}
