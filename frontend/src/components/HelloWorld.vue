@@ -90,7 +90,8 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
-      msg: 'tiandaye'
+      msg: 'tiandaye',
+      websock: null
     }
   },
   beforeCreate () {
@@ -98,6 +99,7 @@ export default {
   },
   created () {
     console.log('Test created')
+    this.initWebSocket()
   },
   mounted () {
     console.log('Test mounted')
@@ -107,12 +109,47 @@ export default {
   },
   destroyed () {
     console.log('Test destroyed')
+    this.websock.close() // 离开路由之后断开websocket连接
   },
   beforeUpdate () {
     console.log('Test beforeUpdate')
   },
   updated () {
     console.log('Test updated')
+  },
+  methods: {
+    initWebSocket () { // 初始化websocket
+      const wsuri = 'ws://127.0.0.1:8811'
+      this.websock = new WebSocket(wsuri)
+      this.websock.onmessage = this.websocketonmessage
+      this.websock.onopen = this.websocketonopen
+      this.websock.onerror = this.websocketonerror
+      this.websock.onclose = this.websocketclose
+    },
+    websocketonopen () { // 连接建立之后执行send方法发送数据
+      let actions = {'test': '12345'}
+      this.websocketsend(actions)
+    },
+    websocketonerror () { // 连接建立失败重连
+      this.initWebSocket()
+    },
+    websocketonmessage (e) { // 数据接收
+      let message = e.data
+      try {
+        message = JSON.parse(e.data)
+      } catch (err) {
+        console.log(err) // 可执行
+      }
+
+      // let message = JSON.parse(e.data)
+      console.log(message)
+    },
+    websocketsend (data) { // 数据发送
+      this.websock.send(JSON.stringify(data))
+    },
+    websocketclose (e) { // 关闭
+      console.log('断开连接', e)
+    }
   }
 }
 </script>

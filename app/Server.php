@@ -56,19 +56,40 @@ class Server
         echo "server: onWorkStart,worker_id:{$server->worker_id}\n";
     }
 
-    public function onOpen($server, $request)
+    /**
+     * 当WebSocket客户端与服务器建立连接并完成握手后会回调此函数
+     *
+     * @param \Swoole\WebSocket\Server $server
+     * @param $request
+     */
+    public function onOpen(Swoole\WebSocket\Server $server, $request)
     {
-
+        echo "server: handshake success with fd{$request->fd}\n";
+        $server->push($request->fd, "hello");
     }
 
+    /**
+     * 客户端关闭
+     *
+     * @param $server
+     * @param $fd
+     */
     public function onClose($server, $fd)
     {
-
+        echo "client {$fd} closed\n";
     }
 
-    public function onMessage($server, $request)
+    /**
+     * 当服务器收到来自客户端的数据帧时会回调此函数
+     *
+     * @param \Swoole\WebSocket\Server $server
+     * @param $frame
+     */
+    public function onMessage(Swoole\WebSocket\Server $server, $frame)
     {
-
+        $data = json_encode($frame->data);
+        echo "receive from {$frame->fd}:{$data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
+        $server->push($frame->fd, $data);
     }
 }
 
