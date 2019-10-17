@@ -8,6 +8,8 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use App\Manager\DataCenter;
+
 /**
  * Class Server
  *
@@ -65,6 +67,7 @@ class Server
     public function onOpen(Swoole\WebSocket\Server $server, $request)
     {
         echo "server: handshake success with fd{$request->fd}\n";
+        DataCenter::log(sprintf('client open fd：%d', $request->fd));
         $server->push($request->fd, "hello");
     }
 
@@ -77,6 +80,7 @@ class Server
     public function onClose($server, $fd)
     {
         echo "client {$fd} closed\n";
+        DataCenter::log(sprintf('client close fd：%d', $fd));
     }
 
     /**
@@ -89,6 +93,7 @@ class Server
     {
         $data = json_encode($frame->data);
         echo "receive from {$frame->fd}:{$data},opcode:{$frame->opcode},fin:{$frame->finish}\n";
+        DataCenter::log(sprintf('client open fd：%d，message：%s', $frame->fd, $frame->data));
         $server->push($frame->fd, $data);
     }
 }
