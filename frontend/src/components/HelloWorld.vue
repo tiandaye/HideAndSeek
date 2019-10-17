@@ -90,6 +90,27 @@ export default {
     return {
       msg: 'Welcome to Your Vue.js App'
     }
+  },
+  beforeCreate () {
+    console.log('Test beforeCreate')
+  },
+  created () {
+    console.log('Test created')
+  },
+  mounted () {
+    console.log('Test mounted')
+  },
+  beforeDestroy () {
+    console.log('Test beforeDestroy')
+  },
+  destroyed () {
+    console.log('Test destroyed')
+  },
+  beforeUpdate () {
+    console.log('Test beforeUpdate')
+  },
+  updated () {
+    console.log('Test updated')
   }
 }
 </script>
