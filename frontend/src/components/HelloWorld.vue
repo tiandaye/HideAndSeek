@@ -1,6 +1,14 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
+    <label>
+        玩家ID：
+        <input type="text" :value="playerId">
+    </label>
+    <button @click="matchPlayer">匹配</button>
+    <div v-if="matching" style="display: inline">
+        匹配中……
+    </div>
     <!--
     <h2>Essential Links</h2>
     <ul>
@@ -91,7 +99,13 @@ export default {
   data () {
     return {
       msg: 'tiandaye',
-      websock: null
+      websock: null,
+      // 随机生成一个玩家id
+      playerId: 'player_' + Math.round(Math.random() * 1000),
+      // 房间号
+      roomId: '',
+      // 是否在匹配
+      matching: false
     }
   },
   beforeCreate () {
@@ -99,6 +113,7 @@ export default {
   },
   created () {
     console.log('Test created')
+    // 初始化websocket
     this.initWebSocket()
   },
   mounted () {
@@ -109,7 +124,8 @@ export default {
   },
   destroyed () {
     console.log('Test destroyed')
-    this.websock.close() // 离开路由之后断开websocket连接
+    // 离开路由之后断开websocket连接
+    this.websock.close()
   },
   beforeUpdate () {
     console.log('Test beforeUpdate')
@@ -118,8 +134,22 @@ export default {
     console.log('Test updated')
   },
   methods: {
+    // 匹配玩家
+    matchPlayer () {
+      let actions = {'code': 600}
+      this.websocketsend(actions)
+
+      this.matching = true
+    },
+    // 开始房间
+    startRoom () {
+      let actions = {'code': 601, 'room_id': this.roomId}
+      this.websocketsend(actions)
+
+      this.matching = false
+    },
     initWebSocket () { // 初始化websocket
-      const wsuri = 'ws://127.0.0.1:8811'
+      const wsuri = 'ws://127.0.0.1:8811?player_id=' + this.playerId
       this.websock = new WebSocket(wsuri)
       this.websock.onmessage = this.websocketonmessage
       this.websock.onopen = this.websocketonopen
@@ -127,8 +157,6 @@ export default {
       this.websock.onclose = this.websocketclose
     },
     websocketonopen () { // 连接建立之后执行send方法发送数据
-      let actions = {'test': '12345'}
-      this.websocketsend(actions)
     },
     websocketonerror () { // 连接建立失败重连
       this.initWebSocket()
@@ -139,6 +167,27 @@ export default {
         message = JSON.parse(e.data)
       } catch (err) {
         console.log(err) // 可执行
+      }
+
+      // let responseData = message.data
+      // switch (message.code) {
+      //   case 1001:
+      //     this.roomId = responseData.room_id
+      //     this.startRoom()
+      //     break
+      // }
+
+      let code = message['code']
+      let data = message['data']
+      switch (code) {
+        // 匹配成功
+        case 1001:
+          this.roomId = data.room_id
+          this.startRoom()
+          break
+
+        default:
+          break
       }
 
       // let message = JSON.parse(e.data)
