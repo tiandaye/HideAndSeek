@@ -22,6 +22,26 @@ class Game
     }
 
     /**
+     * 获得玩家
+     *
+     * @return array
+     */
+    public function getPlayers()
+    {
+        return $this->players;
+    }
+
+    /**
+     * 获得地图信息
+     *
+     * @return array
+     */
+    public function getMapData()
+    {
+        return $this->gameMap->getMapData();
+    }
+
+    /**
      * 判断游戏是否结束
      *
      * @return bool
