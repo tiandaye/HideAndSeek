@@ -46,6 +46,9 @@ class Server
     // 客户端传递过来的code码, 开始房间
     const CLIENT_CODE_START_ROOM = 601;
 
+    // 玩家移动
+    const CLIENT_CODE_PLAYER_MOVE = 602;
+
     // ws
     private $ws;
 
@@ -167,12 +170,19 @@ class Server
         $data = json_decode($frame->data, true);
         $playerId = DataCenter::getPlayerId($frame->fd);
         switch ($data['code']) {
+            // 匹配玩家
             case self::CLIENT_CODE_MATCH_PLAYER:
                 $this->logic->matchPlayer($playerId);
                 break;
 
+            // 开始游戏
             case self::CLIENT_CODE_START_ROOM:
                 $this->logic->startRoom($data['room_id'], $playerId);
+                break;
+
+            // 玩家移动
+            case self::CLIENT_CODE_PLAYER_MOVE:
+                $this->logic->playerMove($playerId, $data['direction']);
                 break;
         }
     }
