@@ -160,6 +160,8 @@ export default {
     console.log('Test created')
     // 初始化websocket
     this.initWebSocket()
+    // pc端通过JavaScript监听键盘点击事件来实现这个功能
+    this.initDirectionKey()
   },
   mounted () {
     console.log('Test mounted')
@@ -179,6 +181,26 @@ export default {
     console.log('Test updated')
   },
   methods: {
+    // 初始化方向key
+    initDirectionKey () {
+      // 为啥这里要用var that = this呀？直接在闭包里用this不行吗？的确，在PHP的闭包中，$this对象会自动从父作用域进行绑定，但在JavaScript闭包中的this会在函数真正被调用执行的时候才确定，如果想达到PHP的自动绑定效果，需要使用ES6语法的箭头函数来编写闭包。
+      var that = this
+      document.onkeydown = function () {
+        if (event.keyCode === 38) {
+          console.log('up')
+          that.clickDirect('up')
+        } else if (event.keyCode === 37) {
+          console.log('left')
+          that.clickDirect('left')
+        } else if (event.keyCode === 39) {
+          console.log('right')
+          that.clickDirect('right')
+        } else if (event.keyCode === 40) {
+          console.log('down')
+          that.clickDirect('down')
+        }
+      }
+    },
     // 匹配玩家
     matchPlayer () {
       let actions = {'code': 600}
