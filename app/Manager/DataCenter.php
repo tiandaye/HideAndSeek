@@ -236,14 +236,25 @@ class DataCenter
     }
 
     /**
+     * 清除房间数据
+     *
+     * @param $roomId
+     */
+    public static function cleanRoomData($roomId)
+    {
+        if (isset(self::$global['rooms'][$roomId])) {
+            unset(self::$global['rooms'][$roomId]);
+        }
+    }
+
+    /**
      * 打日志
      *
      * @param $info
      * @param array $context
      * @param string $level
      */
-    public
-    static function log($info, $context = [], $level = 'INFO')
+    public static function log($info, $context = [], $level = 'INFO')
     {
         if ($context) {
             echo sprintf("[%s][%s]: %s %s\n", date('Y-m-d H:i:s'), $level, $info,
