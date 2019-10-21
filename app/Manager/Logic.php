@@ -113,15 +113,14 @@ class Logic
 
         // 是否能够找到房间
         if (isset(DataCenter::$global['rooms'][$roomId])) {
-            // 判断游戏是否结束
-            $this->checkGameOver($roomId);
-
             /**
              * @var Game $gameManager
              */
             $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
             $gameManager->playerMove($playerId, $direction);
             $this->sendGameInfo($roomId);
+            // 判断游戏是否结束
+            $this->checkGameOver($roomId);
         }
     }
 
@@ -139,9 +138,14 @@ class Logic
         $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
         $players = $gameManager->getPlayers();
         $mapData = $gameManager->getMapData();
-        foreach ($players as $player) {
+        // foreach ($players as $player) {
+        //     $mapData[$player->getX()][$player->getY()] = $player->getId();
+        // }
+        // 必须倒序输出，因为游戏设定数组第一个是寻找者，第二个是躲藏者，叠加时赢的是寻找者。
+        foreach (array_reverse($players) as $player) {
             $mapData[$player->getX()][$player->getY()] = $player->getId();
         }
+
         foreach ($players as $player) {
             $data = [
                 'players'  => $players,
