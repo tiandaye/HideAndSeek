@@ -1,14 +1,55 @@
+/* eslint-disable vue/require-v-for-key */
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
     <label>
-        玩家ID：
+        <!--玩家-->
+        ID：
         <input type="text" :value="playerId">
     </label>
     <button @click="matchPlayer">匹配</button>
     <div v-if="matching" style="display: inline">
         匹配中……
     </div>
+    <br />
+    <hr />
+    <div v-if="mapData" style="display: flex">
+        <div>
+            <template v-for="column in mapData">
+                <div>
+                    <template v-for="item in column">
+                        <div v-if="item==playerId" class="gameItem player">{{playerId}}</div>
+                        <div v-else-if="item==0" class="gameItem wall">墙</div>
+                        <div v-else-if="item==1" class="gameItem road">路</div>
+                        <div v-else class="gameItem player">{{item}}</div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <div>
+            <template v-for="i in 5">
+                <div @mouseup="removeClickClass">
+                    <template v-for="j in 5">
+                        <div v-if="i==2&&j==3" @mousedown="clickDirect('up')" data-direction="up"
+                             class="gameItem gameButton">上
+                        </div>
+                        <div v-else-if="i==3&&j==2" @mousedown="clickDirect('left')" data-direction="left"
+                             class="gameItem gameButton">左
+                        </div>
+                        <div v-else-if="i==3&&j==4" @mousedown="clickDirect('right')" data-direction="right"
+                             class="gameItem gameButton">右
+                        </div>
+                        <div v-else-if="i==4&&j==3" @mousedown="clickDirect('down')" data-direction="down"
+                             class="gameItem gameButton">下
+                        </div>
+                        <div v-else class="gameItem space">无</div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+
     <!--
     <h2>Essential Links</h2>
     <ul>
@@ -105,7 +146,9 @@ export default {
       // 房间号
       roomId: '',
       // 是否在匹配
-      matching: false
+      matching: false,
+      // 地图数据
+      mapData: []
     }
   },
   beforeCreate () {
@@ -148,6 +191,44 @@ export default {
 
       this.matching = false
     },
+    // 点击选择方向按钮
+    clickDirect (direction) {
+      let actions = {'code': 602, 'direction': direction}
+      this.websocketsend(actions)
+      this.addClickClass(direction)
+    },
+    // 判断是否存在某个class
+    hasClass (ele, cls) {
+      return ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'))
+    },
+    // 为指定的dom元素添加样式
+    addClass (ele, cls) {
+      if (!this.hasClass(ele, cls)) ele.className += ' ' + cls
+    },
+    // 删除指定dom元素的样式
+    removeClass (ele, cls) {
+      if (this.hasClass(ele, cls)) {
+        let reg = new RegExp('(\\s|^)' + cls + '(\\s|$)')
+        ele.className = ele.className.replace(reg, ' ')
+      }
+    },
+    // 添加点击的class
+    addClickClass (direction) {
+      let divs = document.getElementsByClassName('gameButton')
+      for (let div of divs) {
+        if (div.dataset.direction === direction) {
+          this.addClass(div, 'clickButton')
+        }
+      }
+    },
+    // 移除点击的class
+    removeClickClass () {
+      let divs = document.getElementsByClassName('gameButton')
+      for (let div of divs) {
+        this.removeClass(div, 'clickButton')
+      }
+    },
+    // ws相关
     initWebSocket () { // 初始化websocket
       const wsuri = 'ws://127.0.0.1:8811?player_id=' + this.playerId
       this.websock = new WebSocket(wsuri)
@@ -186,6 +267,11 @@ export default {
           this.startRoom()
           break
 
+        // 游戏数据
+        case 1004:
+          this.mapData = data.map_data
+          break
+
         default:
           break
       }
@@ -205,6 +291,42 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.gameItem {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    border: 1px solid black;
+    text-align: center;
+}
+
+.wall {
+    background-color: black;
+}
+
+.road {
+    color: white;
+}
+
+.player {
+}
+
+.gameButton {
+    background-color: #efefef;
+}
+
+.space {
+    background-color: white;
+    color: white;
+    border: 0;
+    margin: 1px;
+}
+
+.clickButton {
+    background: #dddddd;
+}
+
+/* 默认的 */
 h1, h2 {
   font-weight: normal;
 }
