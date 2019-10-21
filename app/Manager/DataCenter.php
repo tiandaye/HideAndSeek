@@ -63,6 +63,13 @@ class DataCenter
         foreach ($values as $value) {
             self::redis()->del($value);
         }
+
+        // 清空玩家房间ID
+        $key = self::PREFIX_KEY . ':player_room_id*';
+        $values = self::redis()->keys($key);
+        foreach ($values as $value) {
+            self::redis()->del($value);
+        }
     }
 
     /**
@@ -166,6 +173,41 @@ class DataCenter
     public static function delPlayerId($playerFd)
     {
         $key = self::PREFIX_KEY . ":player_id:" . $playerFd;
+        self::redis()->del($key);
+    }
+
+    /**
+     * 房间id和玩家id绑定
+     *
+     * @param $playerId
+     * @param $roomId
+     */
+    public static function setPlayerRoomId($playerId, $roomId)
+    {
+        $key = self::PREFIX_KEY . ':player_room_id:' . $playerId;
+        self::redis()->set($key, $roomId);
+    }
+
+    /**
+     * 通过玩家id获得房间id
+     *
+     * @param $playerId
+     * @return mixed
+     */
+    public static function getPlayerRoomId($playerId)
+    {
+        $key = self::PREFIX_KEY . ':player_room_id:' . $playerId;
+        return self::redis()->get($key);
+    }
+
+    /**
+     * 删除房间id和玩家id的映射
+     *
+     * @param $playerId
+     */
+    public static function delPlayerRoomId($playerId)
+    {
+        $key = self::PREFIX_KEY . ':player_room_id:' . $playerId;
         self::redis()->del($key);
     }
 
