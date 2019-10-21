@@ -8,6 +8,8 @@
 
 namespace App\Manager;
 
+use App\Model\Player;
+
 /**
  * 逻辑
  *
@@ -93,6 +95,37 @@ class Logic
     }
 
     /**
+     * 玩家移动
+     *
+     * @param $playerId
+     * @param $direction
+     */
+    public function playerMove($playerId, $direction)
+    {
+        // 方向是否合法
+        if (!in_array($direction, Player::DIRECTION)) {
+            echo $direction;
+            return;
+        }
+
+        // 通过玩家id获得房间id
+        $roomId = DataCenter::getPlayerRoomId($playerId);
+
+        // 是否能够找到房间
+        if (isset(DataCenter::$global['rooms'][$roomId])) {
+            // 判断游戏是否结束
+            $this->checkGameOver($roomId);
+
+            /**
+             * @var Game $gameManager
+             */
+            $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+            $gameManager->playerMove($playerId, $direction);
+            $this->sendGameInfo($roomId);
+        }
+    }
+
+    /**
      * 发送游戏信息
      *
      * @param $roomId
@@ -158,6 +191,33 @@ class Logic
         // 仅在设置dispatch_mode=5时有效
         // 在默认的dispatch_mode=2设置下，Server会按照socket fd来分配连接数据到不同的Worker进程。因为fd是不稳定的，一个客户端断开后重新连接，fd会发生改变。这样这个客户端的数据就会被分配到别的Worker。使用bind之后就可以按照用户定义的UID进行分配。即使断线重连，相同UID的TCP连接数据会被分配相同的Worker进程。
         DataCenter::$server->bind($playerFd, crc32($roomId));
+
+        // 房间id和玩家id映射绑定
+        DataCenter::setPlayerRoomId($playerId, $roomId);
+
         Sender::sendMessage($playerId, Sender::MSG_ROOM_ID, ['room_id' => $roomId]);
+    }
+
+    /**
+     * 游戏是否结束
+     *
+     * @param $roomId
+     */
+    private function checkGameOver($roomId)
+    {
+        /**
+         * @var Game $gameManager
+         * @var Player $player
+         */
+        $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+        if ($gameManager->isGameOver()) {
+            $players = $gameManager->getPlayers();
+            $winner = current($players)->getId();
+            foreach ($players as $player) {
+                Sender::sendMessage($player->getId(), Sender::MSG_GAME_OVER, ['winner' => $winner]);
+                DataCenter::delPlayerRoomId($player->getId());
+            }
+            unset(DataCenter::$global['rooms'][$roomId]);
+        }
     }
 }
