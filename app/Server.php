@@ -40,8 +40,11 @@ class Server
     // 添加Swoole Static Handler配置, 前端端口
     const FRONT_PORT = 8812;
 
-    // 客户端传递过来的code码
+    // 客户端传递过来的code码, 匹配玩家
     const CLIENT_CODE_MATCH_PLAYER = 600;
+
+    // 客户端传递过来的code码, 开始房间
+    const CLIENT_CODE_START_ROOM = 601;
 
     // ws
     private $ws;
@@ -100,6 +103,10 @@ class Server
         } else {
             echo "server: onWorkStart,worker_id:{$server->worker_id}\n";
         }
+
+        // $server->manager_pid; // 管理进程的PID，通过向管理进程发送SIGUSR1信号可实现柔性重启
+        // $server->master_pid; // 主进程的PID，通过向主进程发送SIGTERM信号可安全关闭服务器
+        // $server->connections; // 当前服务器的客户端连接，可使用foreach遍历所有连接
 
         // 为什么不在onStart的时候获取？这是因为onStart回调的是Master进程，而onWorkerStart回调的是Worker进程，只有Worker进程才可以发起Task任务。
         DataCenter::$server = $server;
@@ -162,6 +169,10 @@ class Server
         switch ($data['code']) {
             case self::CLIENT_CODE_MATCH_PLAYER:
                 $this->logic->matchPlayer($playerId);
+                break;
+
+            case self::CLIENT_CODE_START_ROOM:
+                $this->logic->startRoom($data['room_id'], $playerId);
                 break;
         }
     }
