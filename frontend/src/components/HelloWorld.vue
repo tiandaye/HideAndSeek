@@ -148,7 +148,9 @@ export default {
       // 是否在匹配
       matching: false,
       // 地图数据
-      mapData: []
+      mapData: [],
+      // 胜利者
+      winner: ''
     }
   },
   beforeCreate () {
@@ -270,6 +272,13 @@ export default {
         // 游戏数据
         case 1004:
           this.mapData = data.map_data
+          break
+
+        case 1005:// 游戏结束
+          this.winner = data.winner
+          setTimeout(function () {
+            alert('游戏结束~胜者是：' + data.winner)
+          }, 200)
           break
 
         default:
