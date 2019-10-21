@@ -18,17 +18,19 @@ namespace App\Manager;
 class Sender
 {
     // 作为发送room_id的code
-    const MSG_ROOM_ID = 1001;
-    const MSG_WAIT_PLAYER = 1002;
-    const MSG_ROOM_START = 1003;
-    const MSG_GAME_INFO = 1004;
+    const MSG_ROOM_ID = 1001; // 房间绑定
+    const MSG_WAIT_PLAYER = 1002; // 等待玩家
+    const MSG_ROOM_START = 1003; // 开始游戏
+    const MSG_GAME_INFO = 1004; // 游戏信息
+    const MSG_GAME_OVER = 1005; // 游戏结束
 
     // 消息
     const CODE_MSG = [
         self::MSG_ROOM_ID     => '房间ID',
         self::MSG_WAIT_PLAYER => '等待其他玩家中……',
         self::MSG_ROOM_START  => '游戏开始啦~',
-        self::MSG_GAME_INFO   => 'game info'
+        self::MSG_GAME_INFO   => 'game info',
+        self::MSG_GAME_OVER   => '游戏结束啦~'
     ];
 
     /**
