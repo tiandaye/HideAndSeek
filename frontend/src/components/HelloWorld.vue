@@ -2,6 +2,9 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
+    <div v-if="onlinePlayer">
+        当前在线玩家：{{onlinePlayer}}
+    </div>
     <label>
         <!--玩家-->
         ID：
@@ -141,8 +144,11 @@ export default {
     return {
       msg: 'tiandaye',
       websock: null,
+      // 在线人数
+      onlinePlayer: null,
       // 随机生成一个玩家id
-      playerId: 'player_' + Math.round(Math.random() * 1000),
+      playerId: '',
+      // playerId: 'player_' + Math.round(Math.random() * 1000),
       // 房间号
       roomId: '',
       // 是否在匹配
@@ -158,10 +164,14 @@ export default {
   },
   created () {
     console.log('Test created')
+    // 初始化playerID
+    this.initPlayerId()
     // 初始化websocket
     this.initWebSocket()
     // pc端通过JavaScript监听键盘点击事件来实现这个功能
     this.initDirectionKey()
+
+    this.getServerInfo()
   },
   mounted () {
     console.log('Test mounted')
@@ -181,6 +191,50 @@ export default {
     console.log('Test updated')
   },
   methods: {
+    getServerInfo () {
+      var that = this
+      $.ajax({
+        url: 'http://127.0.0.1:8812',
+        type: 'get',
+        dataType: 'json',
+        data: {
+          'a': 'get_online_player'
+        },
+        success: function (result) {
+          that.onlinePlayer = result.online_player
+        },
+        error: function () {
+
+        }
+      })
+    },
+    // 初始化player id
+    initPlayerId () {
+      var inputPlayerId = this.getUrlParam('player_id')
+      if (inputPlayerId !== '') {
+        this.playerId = inputPlayerId
+      } else {
+        this.playerId = 'player_' + Math.round(Math.random() * 1000)
+      }
+    },
+    // 获得url参数
+    getUrlParam (paramName) {
+      var url = document.location.toString()
+      var arrObj = url.split('?')
+      if (arrObj.length > 1) {
+        var arrPara = arrObj[1].split('&')
+        var arr
+        for (var i = 0; i < arrPara.length; i++) {
+          arr = arrPara[i].split('=')
+          if (arr !== null && arr[0] === paramName) {
+            return arr[1]
+          }
+        }
+        return ''
+      } else {
+        return ''
+      }
+    },
     // 初始化方向key
     initDirectionKey () {
       // 为啥这里要用var that = this呀？直接在闭包里用this不行吗？的确，在PHP的闭包中，$this对象会自动从父作用域进行绑定，但在JavaScript闭包中的this会在函数真正被调用执行的时候才确定，如果想达到PHP的自动绑定效果，需要使用ES6语法的箭头函数来编写闭包。
@@ -315,6 +369,9 @@ export default {
     },
     websocketclose (e) { // 关闭
       console.log('断开连接', e)
+      if (e.code === 4000) {
+        alert('该player_id已在线')
+      }
     }
   }
 }
