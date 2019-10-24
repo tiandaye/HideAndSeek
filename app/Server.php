@@ -71,6 +71,7 @@ class Server
         $this->ws->on('close', [$this, 'onClose']);
         $this->ws->on('task', [$this, 'onTask']);
         $this->ws->on('finish', [$this, 'onFinish']);
+        $this->ws->on('request', [$this, 'onRequest']);
 
         $this->ws->start();
     }
@@ -132,7 +133,14 @@ class Server
         // 将player_id和fd绑定
         // 在onOpen事件中，传递用户的player_id和fd到DataCenter的setPlayerInfo()方法中进行保存。
         $playerId = $request->get['player_id'];
-        DataCenter::setPlayerInfo($playerId, $request->fd);
+        // DataCenter::setPlayerInfo($playerId, $request->fd);
+
+        // 如果在线则拒绝
+        if (empty(DataCenter::getOnlinePlayer($playerId))) {
+            DataCenter::setPlayerInfo($playerId, $request->fd);
+        } else {
+            $server->disconnect($request->fd, 4000, '该player_id已在线');
+        }
     }
 
     /**
@@ -254,6 +262,24 @@ class Server
         }
     }
 
+    /**
+     * http请求
+     *
+     * @param $request
+     * @param $response
+     */
+    public function onRequest($request, $response)
+    {
+        // $response->end('HelloWorld');
+        DataCenter::log("onRequest");
+        $action = $request->get['a'];
+        if ($action == 'get_online_player') {
+            $data = [
+                'online_player' => DataCenter::lenOnlinePlayer()
+            ];
+            $response->end(json_encode($data));
+        }
+    }
 }
 
 new Server();
