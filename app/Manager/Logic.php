@@ -222,6 +222,9 @@ class Logic
                 DataCenter::delPlayerRoomId($player->getId());
             }
             unset(DataCenter::$global['rooms'][$roomId]);
+
+            // 添加胜利的局数
+            DataCenter::addPlayerWinTimes($winner);
         }
     }
 }

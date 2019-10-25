@@ -3,7 +3,16 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <div v-if="onlinePlayer">
-        当前在线玩家：{{onlinePlayer}}
+        当前在线的玩家人数：{{onlinePlayer}}
+    </div>
+    <div v-if="playersRank">
+        <br>
+        游戏排行榜：
+        <br>
+        <template v-for="times, player in playersRank">
+            玩家：{{player}} 胜利次数：{{times}}
+            <br>
+        </template>
     </div>
     <label>
         <!--玩家-->
@@ -156,7 +165,9 @@ export default {
       // 地图数据
       mapData: [],
       // 胜利者
-      winner: ''
+      winner: '',
+      // 排行榜
+      playersRank: null
     }
   },
   beforeCreate () {
@@ -192,7 +203,7 @@ export default {
   },
   methods: {
     getServerInfo () {
-      var that = this
+      // var that = this
       let _params = {
         'a': 'get_online_player'
       }
@@ -200,14 +211,34 @@ export default {
         params: _params
       })
         .then((response) => {
-          console.group('getServerInfo success')
+          console.group('getServerInfo-get_online_player success')
           console.log(response)
           console.log(response.data)
-          that.onlinePlayer = response.data.online_player
+          this.onlinePlayer = response.data.online_player
           // cb(response.data)
           console.groupEnd()
         }, (err) => {
-          console.group('getServerInfo error')
+          console.group('getServerInfo-get_online_player error')
+          // errorCb()
+          console.log(err)
+          console.groupEnd()
+        })
+
+      _params = {
+        'a': 'get_player_rank'
+      }
+      this.$axios.get('http://127.0.0.1:8812', {
+        params: _params
+      })
+        .then((response) => {
+          console.group('getServerInfo-get_player_rank success')
+          console.log(response)
+          console.log(response.data)
+          this.playersRank = response.data.players_rank
+          // cb(response.data)
+          console.groupEnd()
+        }, (err) => {
+          console.group('getServerInfo-get_player_rank error')
           // errorCb()
           console.log(err)
           console.groupEnd()
