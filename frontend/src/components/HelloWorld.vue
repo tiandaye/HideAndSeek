@@ -193,20 +193,25 @@ export default {
   methods: {
     getServerInfo () {
       var that = this
-      $.ajax({
-        url: 'http://127.0.0.1:8812',
-        type: 'get',
-        dataType: 'json',
-        data: {
-          'a': 'get_online_player'
-        },
-        success: function (result) {
-          that.onlinePlayer = result.online_player
-        },
-        error: function () {
-
-        }
+      let _params = {
+        'a': 'get_online_player'
+      }
+      this.$axios.get('http://127.0.0.1:8812', {
+        params: _params
       })
+        .then((response) => {
+          console.group('getServerInfo success')
+          console.log(response)
+          console.log(response.data)
+          that.onlinePlayer = response.data.online_player
+          // cb(response.data)
+          console.groupEnd()
+        }, (err) => {
+          console.group('getServerInfo error')
+          // errorCb()
+          console.log(err)
+          console.groupEnd()
+        })
     },
     // 初始化player id
     initPlayerId () {
