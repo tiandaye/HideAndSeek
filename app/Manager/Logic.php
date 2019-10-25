@@ -125,6 +125,31 @@ class Logic
     }
 
     /**
+     * 玩家退出, 通知对手. 关闭房间
+     *
+     * @param $closerId
+     */
+    public function closeRoom($closerId)
+    {
+        $roomId = DataCenter::getPlayerRoomId($closerId);
+        if (!empty($roomId)) {
+            /**
+             * @var Game $gameManager
+             * @var Player $player
+             */
+            $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+            $players = $gameManager->getPlayers();
+            foreach ($players as $player) {
+                if ($player->getId() != $closerId) {
+                    Sender::sendMessage($player->getId(), Sender::MSG_OTHER_CLOSE);
+                }
+                DataCenter::delPlayerRoomId($player->getId());
+            }
+            unset(DataCenter::$global['rooms'][$roomId]);
+        }
+    }
+
+    /**
      * 发送游戏信息
      *
      * @param $roomId

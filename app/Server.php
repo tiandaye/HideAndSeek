@@ -157,6 +157,9 @@ class Server
 
         // 在onClose事件中，调用delPlayerInfo()方法根据$fd清除玩家信息
         DataCenter::delPlayerInfo($fd);
+
+        // 玩家退出, 通知对手
+        $this->logic->closeRoom(DataCenter::getPlayerId($fd));
     }
 
     /**

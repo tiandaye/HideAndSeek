@@ -386,11 +386,17 @@ export default {
           this.mapData = data.map_data
           break
 
-        case 1005:// 游戏结束
+        // 游戏结束
+        case 1005:
           this.winner = data.winner
           setTimeout(function () {
             alert('游戏结束~胜者是：' + data.winner)
           }, 200)
+          break
+
+        // 玩家退出, 通知对手
+        case 1006:
+          alert('你的敌人跑路了')
           break
 
         default:
