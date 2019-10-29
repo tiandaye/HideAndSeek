@@ -14,6 +14,17 @@
             <br>
         </template>
     </div>
+    <div v-if="roomId">
+        <div>
+            房间号：{{roomId}}
+        </div>
+        <div v-if="timeLimit">
+            剩余时间：{{timeLimit}}
+        </div>
+    </div>
+    <div v-if="playerType">
+        本局玩家类型：{{playerTypeArr[playerType]}}
+    </div>
     <label>
         <!--玩家-->
         ID：
@@ -176,7 +187,14 @@ export default {
       // 排行榜
       playersRank: null,
       // 邀请的对手
-      opponentId: ''
+      opponentId: '',
+      // 玩家类型
+      playerType: null,
+      playerTypeArr: [0, '寻找者', '躲藏者'],
+      // 倒计时
+      timeLimit: null,
+      // setInterval句柄
+      timerId: null
     }
   },
   beforeCreate () {
@@ -402,9 +420,25 @@ export default {
           this.startRoom()
           break
 
+        // // 游戏数据
+        // case 1004:
+        //   this.mapData = data.map_data
+        //   break
+
         // 游戏数据
         case 1004:
           this.mapData = data.map_data
+          if (!this.playerType) {
+            let players = data.players
+            this.playerType = players[this.playerId].type
+          }
+          if (!this.timerId) {
+            this.timeLimit = data.time_limit
+            var that = this
+            this.timerId = setInterval(function () {
+              that.timeLimit--
+            }, 1000)
+          }
           break
 
         // 游戏结束

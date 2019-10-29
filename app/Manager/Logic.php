@@ -21,6 +21,9 @@ class Logic
     // 显示玩家附近几步的数据
     const PLAYER_DISPLAY_LEN = 2;
 
+    // 游戏时间限制
+    const GAME_TIME_LIMIT = 10;
+
     /**
      * 【匹配玩家】新增matchPlayer()方法，将Server传递过来的player_id放入DataCenter的匹配队列中。
      *
@@ -77,6 +80,7 @@ class Logic
         } else {
             // 第二个玩家
             $gameManager->createPlayer($playerId, 6, 10);
+            DataCenter::$global['rooms'][$roomId]['timer_id'] = $this->createGameTimer($roomId); // 倒计时
             Sender::sendMessage($playerId, Sender::MSG_ROOM_START);
             $this->sendGameInfo($roomId);
         }
@@ -212,8 +216,9 @@ class Logic
 
         foreach ($players as $player) {
             $data = [
-                'players'  => $players,
-                'map_data' => $this->getNearMap($mapData, $player->getX(), $player->getY())
+                'players'    => $players,
+                'map_data'   => $this->getNearMap($mapData, $player->getX(), $player->getY()),
+                'time_limit' => self::GAME_TIME_LIMIT
             ];
             Sender::sendMessage($player->getId(), Sender::MSG_GAME_INFO, $data);
         }
@@ -281,14 +286,83 @@ class Logic
         if ($gameManager->isGameOver()) {
             $players = $gameManager->getPlayers();
             $winner = current($players)->getId();
-            foreach ($players as $player) {
-                Sender::sendMessage($player->getId(), Sender::MSG_GAME_OVER, ['winner' => $winner]);
-                DataCenter::delPlayerRoomId($player->getId());
-            }
-            unset(DataCenter::$global['rooms'][$roomId]);
-
-            // 添加胜利的局数
-            DataCenter::addPlayerWinTimes($winner);
+            $this->gameOver($roomId, $winner);
         }
+
+        // $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+        // if ($gameManager->isGameOver()) {
+        //     $players = $gameManager->getPlayers();
+        //     $winner = current($players)->getId();
+        //     foreach ($players as $player) {
+        //         Sender::sendMessage($player->getId(), Sender::MSG_GAME_OVER, ['winner' => $winner]);
+        //         DataCenter::delPlayerRoomId($player->getId());
+        //     }
+        //     unset(DataCenter::$global['rooms'][$roomId]);
+        //
+        //     // 添加胜利的局数
+        //     DataCenter::addPlayerWinTimes($winner);
+        // }
+    }
+
+    /**
+     * 创建房间的timer(如果游戏未结束则主动结束)
+     *
+     * @param $roomId
+     * @return int
+     */
+    private function createGameTimer($roomId)
+    {
+        return swoole_timer_after(self::GAME_TIME_LIMIT * 1000, function () use ($roomId) {
+            if (isset(DataCenter::$global['rooms'][$roomId])) {
+                //游戏还未结束则主动结束游戏
+                /**
+                 * @var Game $gameManager
+                 */
+                $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+                $players = $gameManager->getPlayers();
+                $winner = end($players)->getId();
+                $this->gameOver($roomId, $winner);
+            }
+        });
+
+        // return swoole_timer_after(self::GAME_TIME_LIMIT * 1000, function () use ($roomId) {
+        //     if (isset(DataCenter::$global['rooms'][$roomId])) {
+        //         // 游戏还未结束则主动结束游戏
+        //         /**
+        //          * @var Game $gameManager
+        //          */
+        //         $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+        //         $players = $gameManager->getPlayers();
+        //         $winner = end($players)->getId();
+        //         DataCenter::addPlayerWinTimes($winner);
+        //         foreach ($players as $player) {
+        //             Sender::sendMessage($player->getId(), Sender::MSG_GAME_OVER, ['winner' => $winner]);
+        //             DataCenter::delPlayerRoomId($player->getId());
+        //         }
+        //         unset(DataCenter::$global['rooms'][$roomId]);
+        //     }
+        // });
+    }
+
+    /**
+     * 游戏结束
+     *
+     * @param $roomId
+     * @param $winner
+     */
+    private function gameOver($roomId, $winner)
+    {
+        /**
+         * @var Game $gameManager
+         * @var Player $player
+         */
+        $gameManager = DataCenter::$global['rooms'][$roomId]['manager'];
+        $players = $gameManager->getPlayers();
+        DataCenter::addPlayerWinTimes($winner);
+        foreach ($players as $player) {
+            Sender::sendMessage($player->getId(), Sender::MSG_GAME_OVER, ['winner' => $winner]);
+            DataCenter::delPlayerRoomId($player->getId());
+        }
+        unset(DataCenter::$global['rooms'][$roomId]);
     }
 }

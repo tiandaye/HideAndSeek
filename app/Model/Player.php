@@ -8,7 +8,7 @@
 
 namespace App\Model;
 
-class Player
+class Player implements \JsonSerializable
 {
     const UP = 'up';
     const DOWN = 'down';
@@ -112,5 +112,20 @@ class Player
     public function right()
     {
         $this->y++;
+    }
+
+    /**
+     * json序列(为实体类Player实现JsonSerializable接口，满足sendGameInfo()方法中输出$players对象的需求。)
+     *
+     * @return array|mixed
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'id'   => $this->id,
+            'type' => $this->type,
+            'x'    => $this->x,
+            'y'    => $this->y,
+        ];
     }
 }

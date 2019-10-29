@@ -12,6 +12,11 @@ use App\Manager\DataCenter;
 use App\Manager\Logic;
 use App\Manager\TaskManager;
 
+// onStart：启动后在 主进程（master）的主线程回调此函数。如果想要修改服务器后台进程名，就需要在这个回调函数中进行处理。
+// onWorkerStart：此事件在Worker进程/Task进程启动时发生。这里创建的对象可以在进程生命周期内使用。当设置了n个worker的时候，这个函数将会被回调n次。在默认的dispatch_mode模式下，每一个新连接都会随机分配一个worker进程，并且在此连接断开前每一次的message将会发送到同一个worker进程。如果我们想发送消息到客户端，就可以使用此回调函数的第一个参数$server对象。
+// onOpen：当WebSocket客户端与服务器建立连接并完成握手后会回调此函数。
+// onMessage：当服务器收到来自客户端的数据帧时会回调此函数。第一个参数$server与onWorkerStart()方法中的参数$server是同一个对象。第二个参数$request实际是一个swoole_websocket_frame对象，里面包含了4个属性，其中比较重要的是fd和data。fd表示当前发送消息的客户端socket id，想要给客户端发送消息就必须要通过这个fd。data则保存了客户端发来的数据。
+// onClose：客户端连接关闭后，在worker进程中回调此函数，参数中的$fd就是客户端的连接fd。
 /**
  * Class Server
  *
