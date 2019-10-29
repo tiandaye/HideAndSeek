@@ -49,6 +49,15 @@ class Server
     // 玩家移动
     const CLIENT_CODE_PLAYER_MOVE = 602;
 
+    // 邀请对手
+    const CLIENT_CODE_MAKE_CHALLENGE = 603;
+
+    // 邀请对手, 接受挑战
+    const CLIENT_CODE_ACCEPT_CHALLENGE = 604;
+
+    // 邀请对手, 拒绝挑战
+    const CLIENT_CODE_REFUSE_CHALLENGE = 605;
+
     // ws
     private $ws;
 
@@ -194,6 +203,21 @@ class Server
             // 玩家移动
             case self::CLIENT_CODE_PLAYER_MOVE:
                 $this->logic->playerMove($playerId, $data['direction']);
+                break;
+
+            // 邀请对手
+            case self::CLIENT_CODE_MAKE_CHALLENGE:
+                $this->logic->makeChallenge($data['opponent_id'], $playerId);
+                break;
+
+            // 邀请对手, 接受挑战
+            case self::CLIENT_CODE_ACCEPT_CHALLENGE:
+                $this->logic->acceptChallenge($data['challenger_id'], $playerId);
+                break;
+
+            // 邀请对手, 拒绝挑战
+            case self::CLIENT_CODE_REFUSE_CHALLENGE:
+                $this->logic->refuseChallenge($data['challenger_id']);
                 break;
         }
     }

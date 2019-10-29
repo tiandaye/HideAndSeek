@@ -23,6 +23,13 @@
     <div v-if="matching" style="display: inline">
         匹配中……
     </div>
+    <div v-else>
+        <div v-if="!roomId" style="padding-top: 5px;">
+            对手ID：
+            <input type="text" v-model="opponentId">
+            <button @click="makeChallenge">挑战</button>
+        </div>
+    </div>
     <br />
     <hr />
     <div v-if="mapData" style="display: flex">
@@ -167,7 +174,9 @@ export default {
       // 胜利者
       winner: '',
       // 排行榜
-      playersRank: null
+      playersRank: null,
+      // 邀请的对手
+      opponentId: ''
     }
   },
   beforeCreate () {
@@ -291,6 +300,18 @@ export default {
         }
       }
     },
+    // 邀请对手
+    makeChallenge () {
+      if (!this.opponentId) {
+        alert('请输入对手ID')
+        return
+      }
+      let actions = {
+        'code': 603,
+        'opponent_id': this.opponentId
+      }
+      this.websocketsend(actions)
+    },
     // 匹配玩家
     matchPlayer () {
       let actions = {'code': 600}
@@ -399,6 +420,32 @@ export default {
           alert('你的敌人跑路了')
           break
 
+        // 对手不在线
+        case 1007:
+          alert('对手不在线')
+          break
+
+        // 接受挑战
+        case 1008:
+          var challengerId = data.challenger_id
+          var msg = '玩家 ' + challengerId + ' 邀请你进行对战，是否接受'
+          let actions = {
+            'code': 604,
+            'challenger_id': challengerId
+          }
+          if (!confirm(msg)) {
+            actions = {
+              'code': 605,
+              'challenger_id': challengerId
+            }
+          }
+          this.websocketsend(actions)
+          break
+
+        // 拒绝挑战
+        case 1009:
+          alert('对方拒绝了你的挑战')
+          break
         default:
           break
       }

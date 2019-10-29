@@ -24,15 +24,21 @@ class Sender
     const MSG_GAME_INFO = 1004; // 游戏信息
     const MSG_GAME_OVER = 1005; // 游戏结束
     const MSG_OTHER_CLOSE = 1006; // 玩家退出, 通知对手
+    const MSG_OPPONENT_OFFLINE = 1007; // 邀请对手, 没在线
+    const MSG_MAKE_CHALLENGE = 1008; // 邀请对手
+    const MSG_REFUSE_CHALLENGE = 1009; // 邀请对手, 拒绝接受
 
     // 消息
     const CODE_MSG = [
-        self::MSG_ROOM_ID     => '房间ID',
-        self::MSG_WAIT_PLAYER => '等待其他玩家中……',
-        self::MSG_ROOM_START  => '游戏开始啦~',
-        self::MSG_GAME_INFO   => 'game info',
-        self::MSG_GAME_OVER   => '游戏结束啦~',
-        self::MSG_OTHER_CLOSE => '你的敌人跑路了',
+        self::MSG_ROOM_ID          => '房间ID',
+        self::MSG_WAIT_PLAYER      => '等待其他玩家中……',
+        self::MSG_ROOM_START       => '游戏开始啦~',
+        self::MSG_GAME_INFO        => 'game info',
+        self::MSG_GAME_OVER        => '游戏结束啦~',
+        self::MSG_OTHER_CLOSE      => '你的敌人跑路了',
+        self::MSG_OPPONENT_OFFLINE => '对手不在线',
+        self::MSG_MAKE_CHALLENGE   => '发起挑战',
+        self::MSG_REFUSE_CHALLENGE => '对方拒绝了你的挑战',
     ];
 
     /**

@@ -150,6 +150,45 @@ class Logic
     }
 
     /**
+     * 邀请对手
+     *
+     * @param $opponentId
+     * @param $playerId
+     */
+    public function makeChallenge($opponentId, $playerId)
+    {
+        if (empty(DataCenter::getOnlinePlayer($opponentId))) {
+            Sender::sendMessage($playerId, Sender::MSG_OPPONENT_OFFLINE);
+        } else {
+            $data = [
+                'challenger_id' => $playerId
+            ];
+            Sender::sendMessage($opponentId, Sender::MSG_MAKE_CHALLENGE, $data);
+        }
+    }
+
+    /**
+     * 邀请对手, 接受挑战
+     *
+     * @param $challengerId
+     * @param $playerId
+     */
+    public function acceptChallenge($challengerId, $playerId)
+    {
+        $this->createRoom($challengerId, $playerId);
+    }
+
+    /**
+     * 邀请对手, 拒绝接受
+     *
+     * @param $challengerId
+     */
+    public function refuseChallenge($challengerId)
+    {
+        Sender::sendMessage($challengerId, Sender::MSG_REFUSE_CHALLENGE);
+    }
+
+    /**
      * 发送游戏信息
      *
      * @param $roomId
