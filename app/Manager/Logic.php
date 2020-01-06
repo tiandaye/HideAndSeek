@@ -35,7 +35,6 @@ class Logic
         DataCenter::pushPlayerToWaitList($playerId);
 
         // 发起一个Task尝试匹配
-        //发起一个Task尝试匹配
         DataCenter::$server->task(['code' => TaskManager::TASK_CODE_FIND_PLAYER]);
         // swoole_server->task(['code'=>'xxx']);
     }
